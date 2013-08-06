@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/cgiffard/text-downsize"
+    "url": "git://github.com/cgiffard/Downsize"
   },
   "keywords": [
     "text",
@@ -24,8 +24,12 @@
   ],
   "author": "Christopher Giffard",
   "license": "BSD",
+  "devDependencies": {
+    "chai": "~1.5.0",
+    "mocha": "~1.9.0"
+  },
   "readmeFilename": "README.md",
   "bugs": {
-    "url": "https://github.com/cgiffard/text-downsize/issues"
+    "url": "https://github.com/cgiffard/Downsize/issues"
   }
 }
