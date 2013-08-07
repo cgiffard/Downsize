@@ -28,6 +28,16 @@ downsize("<p>some markup here...</p>",{"characters": 6});
 <p>some m</p>
 ```
 
+### Appending an ellipsis
+
+```javascript
+downsize("<p>some markup here...</p>",{"characters": 6, "append": "..."});
+```
+
+```html
+<p>some m...</p>
+```
+
 ## Notes
 
 Downsize is designed to handle bad markup, and should count words and 

@@ -19,7 +19,7 @@
 		
 		var options		= options && typeof options === "object" ? options : {},
 			wordChars	= options.wordChars instanceof RegExp ?
-								options.wordChars : /[a-z0-9\-]/i;
+								options.wordChars : /[a-z0-9\-\']/i;
 		
 		function count(chr,track) {
 			var limit = options.words || (options.characters+1) || Infinity;
@@ -151,7 +151,7 @@
 						tagBuffer = "";
 						
 						// Closed tags are word boundries. Count!
-						if (count("",countState)) break;
+						count("",countState);
 						
 						// Because we've reset our parser state we need
 						// to manually short circuit the logic that comes next.
@@ -166,7 +166,7 @@
 						tagBuffer = "";
 						
 						// Closed tags are word boundries. Count!
-						if (count("",countState)) break;
+						count("",countState);
 						
 						// Another cleanup short-circuit...
 						continue;
@@ -185,6 +185,10 @@
 				// Nope, we still thirst for more.
 				truncatedText += text[pointer];
 			}
+		}
+		
+		if (options.append && (stack.length || tagBuffer.length)) {
+			truncatedText = truncatedText.trim() + options.append;
 		}
 		
 		// Append anything still left in the buffer

@@ -74,6 +74,21 @@ describe("Word-wise truncation",function() {
 	});
 });
 
+describe("Appending",function() {
+	it("should properly append an ellipsis where required",function() {
+		downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>",{characters:15,append:"..."})
+			.should.equal("<p>abcdefghij</p><p>klmno...</p>");
+		
+		downsize("<p>here's some text.</p>",{words:2,append:"... (read more)"})
+			.should.equal("<p>here's some... (read more)</p>");
+	});
+	
+	it("should not append an ellipsis where not required",function() {
+		downsize("<p>here's some text.</p>",{words:5,append:"..."})
+			.should.equal("<p>here's some text.</p>");
+	});
+});
+
 describe("Performance",function() {
 	var perfTestSeed = "";
 	for (var i=0; i<1000000; i++) {
