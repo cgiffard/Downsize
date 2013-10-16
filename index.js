@@ -19,7 +19,7 @@
 		
 		var options		= options && typeof options === "object" ? options : {},
 			wordChars	= options.wordChars instanceof RegExp ?
-								options.wordChars : /[a-z0-9\-\']/i;
+								options.wordChars : /[a-zа-я0-9\-\']/i;
 		
 		function count(chr,track) {
 			var limit = options.words || (options.characters+1) || Infinity;
