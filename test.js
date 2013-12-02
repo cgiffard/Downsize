@@ -106,12 +106,12 @@ describe("Performance", function () {
     }
 
     describe("truncate five words from a four-million word corpus one hundred thousand times", function () {
-        it("benchmark time should be under five seconds", function () {
+        it("benchmark time should be under twenty seconds", function () {
             var startTime = Date.now();
             for (i = 0; i < 100000; i++) {
                 downsize(perfTestSeed, {"words": 5});
             }
-            (Date.now() - startTime).should.be.lte(5000);
+            (Date.now() - startTime).should.be.lte(20*1000);
         });
     });
 });
