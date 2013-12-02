@@ -1,227 +1,228 @@
-(function(exportTo) {
-	"use strict";
+var XRegexp = require('xregexp').XRegExp;
 
-	// Nodes which should be considered implicitly self-closing
-	// Taken from http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#void-elements
-	var voidElements = [
-		"area", "base", "br", "col", "command", "embed", "hr", "img", "input",
-		"keygen", "link", "meta", "param", "source", "track", "wbr"
-	];
+(function (exportTo) {
+    "use strict";
 
-	var downsize = function(text,options,offset) {
-		var stack = [],
-			pointer = 0,
-			tagName = "",
-			parseState = 0,
-			countState = {},
-			tagBuffer = "",
-			truncatedText = "";
+    // Nodes which should be considered implicitly self-closing
+    // Taken from http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#void-elements
+    var voidElements = [
+        "area", "base", "br", "col", "command", "embed", "hr", "img", "input",
+        "keygen", "link", "meta", "param", "source", "track", "wbr"
+    ];
 
-		var options		= options && typeof options === "object" ? options : {},
-			wordChars	= options.wordChars instanceof RegExp ?
-								options.wordChars : /[a-z0-9\-\']/i;
+    var downsize = function (text, options, offset) {
+        var stack = [],
+            pointer = 0,
+            tagName = "",
+            parseState = 0,
+            countState = {},
+            tagBuffer = "",
+            truncatedText = "";
 
-		function count(chr,track) {
-			var limit = options.words || (options.characters+1) || Infinity;
+        var options = options && typeof options === "object" ? options : {},
+            wordChars = options.wordChars instanceof RegExp ?
+                options.wordChars : XRegexp("[\\p{L}0-9\\-\\']", "i");
 
-			if (!("unitCount" in track))
-				track.unitCount = 0;
+        function count(chr, track) {
+            var limit = options.words || (options.characters + 1) || Infinity;
 
-			// Tick-tock state storage for counting words
-			// If it doesn't exist, initialise it with value of current char
-			if (!("countState" in track))
-				track.countState = !!(chr+"").match(wordChars);
+            if (!("unitCount" in track))
+                track.unitCount = 0;
 
-			if (options.words) {
-				if (!!(chr+"").match(wordChars) !== track.countState) {
+            // Tick-tock state storage for counting words
+            // If it doesn't exist, initialise it with value of current char
+            if (!("countState" in track))
+                track.countState = !!wordChars.test(chr + "");
 
-					track.countState = !!(chr+"").match(wordChars);
+            if (options.words) {
+                if (!!wordChars.test(chr + "") !== track.countState) {
 
-					// Only count the words on the "tock", or we'd be counting
-					// them twice.
-					if (!track.countState)
-						track.unitCount ++;
-				}
+                    track.countState = !!wordChars.test(chr + "");
 
-			// We pass in empty values to count word boundries defined by tags.
-			// This isn't relevant to character truncation.
-			} else if (chr !== "") {
+                    // Only count the words on the "tock", or we'd be counting
+                    // them twice.
+                    if (!track.countState)
+                        track.unitCount++;
+                }
 
-				track.unitCount ++;
-			}
+                // We pass in empty values to count word boundries defined by tags.
+                // This isn't relevant to character truncation.
+            } else if (chr !== "") {
 
-			// Return true when we've hit our limit
-			return (track.unitCount >= limit);
-		}
+                track.unitCount++;
+            }
 
-		// Define our parse states
-		var PARSER_UNINITIALISED		= 0,
-			PARSER_TAG_COMMENCED		= 1,
-			PARSER_TAG_STRING 			= -1,
-			PARSER_TAG_STRING_SINGLE 	= -2,
-			PARSER_COMMENT 				= -3;
+            // Return true when we've hit our limit
+            return (track.unitCount >= limit);
+        }
 
-		for (; pointer < text.length; pointer ++ ) {
+        // Define our parse states
+        var PARSER_UNINITIALISED = 0,
+            PARSER_TAG_COMMENCED = 1,
+            PARSER_TAG_STRING = -1,
+            PARSER_TAG_STRING_SINGLE = -2,
+            PARSER_COMMENT = -3;
 
-			if (parseState !== PARSER_UNINITIALISED)
-				tagBuffer += text[pointer];
+        for (; pointer < text.length; pointer++) {
 
-			switch (text[pointer]) {
+            if (parseState !== PARSER_UNINITIALISED)
+                tagBuffer += text[pointer];
 
-				case "<":
-					// Ooh look — we're starting a new tag.
-					// (Provided we're in uninitialised state and the next
-					// character is a word character, explamation mark or slash)
-					if (parseState === PARSER_UNINITIALISED &&
-						text[pointer+1].match(/[a-z0-9\-\_\/\!]/)) {
+            switch (text[pointer]) {
 
-						parseState = PARSER_TAG_COMMENCED;
-						tagBuffer += text[pointer];
-					}
+                case "<":
+                    // Ooh look — we're starting a new tag.
+                    // (Provided we're in uninitialised state and the next
+                    // character is a word character, explamation mark or slash)
+                    if (parseState === PARSER_UNINITIALISED &&
+                        text[pointer + 1].match(/[a-z0-9\-\_\/\!]/)) {
 
-					break;
+                        parseState = PARSER_TAG_COMMENCED;
+                        tagBuffer += text[pointer];
+                    }
 
-				case "!":
-					if (parseState === PARSER_TAG_COMMENCED &&
-						text[pointer-1] === "<") {
+                    break;
 
-						parseState = PARSER_COMMENT;
-					}
+                case "!":
+                    if (parseState === PARSER_TAG_COMMENCED &&
+                        text[pointer - 1] === "<") {
 
-					break;
+                        parseState = PARSER_COMMENT;
+                    }
 
-				case "-":
-					if (parseState === PARSER_COMMENT)
-						parseState = PARSER_COMMENT;
+                    break;
 
-					break;
+                case "-":
+                    if (parseState === PARSER_COMMENT)
+                        parseState = PARSER_COMMENT;
 
-				case "\"":
-					if (parseState === PARSER_TAG_STRING) {
-						parseState = PARSER_TAG_COMMENCED;
+                    break;
 
-					} else if (parseState !== PARSER_UNINITIALISED) {
-						parseState = PARSER_TAG_STRING;
-					}
+                case "\"":
+                    if (parseState === PARSER_TAG_STRING) {
+                        parseState = PARSER_TAG_COMMENCED;
 
-					break;
+                    } else if (parseState !== PARSER_UNINITIALISED) {
+                        parseState = PARSER_TAG_STRING;
+                    }
 
-				case "'":
-					if (parseState === PARSER_TAG_STRING_SINGLE) {
-						parseState = PARSER_TAG_COMMENCED;
+                    break;
 
-					} else if (parseState !== PARSER_UNINITIALISED) {
-						parseState = PARSER_TAG_STRING_SINGLE;
-					}
+                case "'":
+                    if (parseState === PARSER_TAG_STRING_SINGLE) {
+                        parseState = PARSER_TAG_COMMENCED;
 
-					break;
+                    } else if (parseState !== PARSER_UNINITIALISED) {
+                        parseState = PARSER_TAG_STRING_SINGLE;
+                    }
 
-				case ">":
+                    break;
 
-					if (parseState === PARSER_TAG_COMMENCED) {
+                case ">":
 
-						parseState = PARSER_UNINITIALISED;
-						truncatedText += tagBuffer;
-						tagName = getTagName(tagBuffer);
+                    if (parseState === PARSER_TAG_COMMENCED) {
 
-						// Closing tag. (Do we need to be more lenient/)
-						if (tagBuffer.match(/<\s*\//)) {
+                        parseState = PARSER_UNINITIALISED;
+                        truncatedText += tagBuffer;
+                        tagName = getTagName(tagBuffer);
 
-							// We don't attempt to walk up the stack to close
-							// tags. If the text to be truncated contains
-							// malformed nesting, we just close what we're
-							// permitted to and clean up at the end.
-							if (getTagName(stack[stack.length-1]) === tagName) {
-								stack.pop();
-							}
+                        // Closing tag. (Do we need to be more lenient/)
+                        if (tagBuffer.match(/<\s*\//)) {
 
-						// Nope, it's an opening tag.
-						} else {
+                            // We don't attempt to walk up the stack to close
+                            // tags. If the text to be truncated contains
+                            // malformed nesting, we just close what we're
+                            // permitted to and clean up at the end.
+                            if (getTagName(stack[stack.length - 1]) === tagName) {
+                                stack.pop();
+                            }
 
-							// Don't push self closing or void elements on to
-							// the stack, since they have no effect on nesting.
+                            // Nope, it's an opening tag.
+                        } else {
 
-							if (voidElements.indexOf(tagName) < 0 &&
-								!tagBuffer.match(/\/\s*>$/)) {
+                            // Don't push self closing or void elements on to
+                            // the stack, since they have no effect on nesting.
 
-								stack.push(tagBuffer);
-							}
-						}
+                            if (voidElements.indexOf(tagName) < 0 && !tagBuffer.match(/\/\s*>$/)) {
 
-						tagBuffer = "";
+                                stack.push(tagBuffer);
+                            }
+                        }
 
-						// Closed tags are word boundries. Count!
-						count("",countState);
+                        tagBuffer = "";
 
-						// Because we've reset our parser state we need
-						// to manually short circuit the logic that comes next.
-						continue;
-					}
+                        // Closed tags are word boundries. Count!
+                        count("", countState);
 
-					if (parseState === PARSER_COMMENT &&
-						text.substring(pointer-2,pointer) === "--") {
+                        // Because we've reset our parser state we need
+                        // to manually short circuit the logic that comes next.
+                        continue;
+                    }
 
-						parseState = PARSER_UNINITIALISED;
-						truncatedText += tagBuffer;
-						tagBuffer = "";
+                    if (parseState === PARSER_COMMENT &&
+                        text.substring(pointer - 2, pointer) === "--") {
 
-						// Closed tags are word boundries. Count!
-						count("",countState);
+                        parseState = PARSER_UNINITIALISED;
+                        truncatedText += tagBuffer;
+                        tagBuffer = "";
 
-						// Another cleanup short-circuit...
-						continue;
-					}
+                        // Closed tags are word boundries. Count!
+                        count("", countState);
 
-					break;
-			}
+                        // Another cleanup short-circuit...
+                        continue;
+                    }
 
-			// We're not inside a tag, comment, attribute, or string.
-			// This is just text.
-			if (!parseState) {
+                    break;
+            }
 
-				// Have we had enough of a good thing?
-				if (count(text[pointer],countState)) break;
+            // We're not inside a tag, comment, attribute, or string.
+            // This is just text.
+            if (!parseState) {
 
-				// Nope, we still thirst for more.
-				truncatedText += text[pointer];
-			}
-		}
+                // Have we had enough of a good thing?
+                if (count(text[pointer], countState)) break;
 
-		if (options.append && (stack.length || tagBuffer.length)) {
-			truncatedText = truncatedText.trim() + options.append;
-		}
+                // Nope, we still thirst for more.
+                truncatedText += text[pointer];
+            }
+        }
 
-		// Append anything still left in the buffer
-		truncatedText += tagBuffer;
+        if (options.append && (stack.length || tagBuffer.length)) {
+            truncatedText = truncatedText.trim() + options.append;
+        }
 
-		// Balance anything still left on the stack
-		while (stack.length) {
-			truncatedText += closeTag(stack.pop());
-		}
+        // Append anything still left in the buffer
+        truncatedText += tagBuffer;
 
-		return truncatedText;
-	};
+        // Balance anything still left on the stack
+        while (stack.length) {
+            truncatedText += closeTag(stack.pop());
+        }
 
-	function closeTag(openingTag) {
-		// Grab the tag name, including namespace, if there is one.
-		var tagName = getTagName(openingTag);
+        return truncatedText;
+    };
 
-		// We didn't get a tag name, so return nothing. Better than
-		// a bad prediction, or a junk tag.
-		if (!tagName) return "";
+    function closeTag(openingTag) {
+        // Grab the tag name, including namespace, if there is one.
+        var tagName = getTagName(openingTag);
 
-		return "</" + tagName + ">";
-	}
+        // We didn't get a tag name, so return nothing. Better than
+        // a bad prediction, or a junk tag.
+        if (!tagName) return "";
 
-	function getTagName(tag) {
-		var tagName = (tag||"").match(/<\/*([a-z0-9\:\-\_]+)/i);
-		return tagName ? tagName[1] : null;
-	}
+        return "</" + tagName + ">";
+    }
 
-	// Export to node
-	if (typeof module !== 'undefined' && module.exports)
-		return module.exports = downsize;
+    function getTagName(tag) {
+        var tagName = (tag || "").match(/<\/*([a-z0-9\:\-\_]+)/i);
+        return tagName ? tagName[1] : null;
+    }
 
-	// Nope, export to the browser instead.
-	exportTo.downsize = downsize;
+    // Export to node
+    if (typeof module !== 'undefined' && module.exports)
+        return module.exports = downsize;
+
+    // Nope, export to the browser instead.
+    exportTo.downsize = downsize;
 }(this));
