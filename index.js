@@ -19,12 +19,20 @@ var XRegexp = require('xregexp').XRegExp;
             tagBuffer = "",
             truncatedText = "";
 
-        var options = options && typeof options === "object" ? options : {},
+        options = options && typeof options === "object" ? options : {},
             wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : XRegexp("[\\p{L}0-9\\-\\']", "i");
 
         function count(chr, track) {
-            var limit = options.words || (options.characters + 1) || Infinity;
+            var limit;
+            if( options.words !== undefined ){
+              limit = parseInt( options.words, 10 );
+            } else if( options.characters !== undefined ){
+              limit = parseInt( options.characters , 10);
+            } else {
+              limit = Infinity;
+            }
+            limit = isNaN( limit ) ? Infinity : limit;
 
             if (!("unitCount" in track))
                 track.unitCount = 0;
@@ -34,7 +42,7 @@ var XRegexp = require('xregexp').XRegExp;
             if (!("countState" in track))
                 track.countState = !!wordChars.test(chr + "");
 
-            if (options.words) {
+            if (options.words !== undefined) {
                 if (!!wordChars.test(chr + "") !== track.countState) {
 
                     track.countState = !!wordChars.test(chr + "");
