@@ -19,7 +19,7 @@ var XRegexp = require('xregexp').XRegExp;
             tagBuffer = "",
             truncatedText = "";
 
-        options = options && typeof options === "object" ? options : {},
+        var options = options && typeof options === "object" ? options : {},
             wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : XRegexp("[\\p{L}0-9\\-\\']", "i");
 
