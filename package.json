@@ -1,6 +1,6 @@
 {
   "name": "downsize",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Tag-safe truncation for HTML and XML. Works by word!",
   "main": "index.js",
   "scripts": {
