@@ -102,7 +102,11 @@ var XRegexp = require('xregexp').XRegExp;
                     if (parseState === PARSER_TAG_STRING) {
                         parseState = PARSER_TAG_COMMENCED;
 
-                    } else if (parseState !== PARSER_UNINITIALISED) {
+                    } else if (parseState === PARSER_TAG_STRING_SINGLE) {
+                        // if double quote is found in a single quote string, ignore it and let the string finish
+                        break;
+                    }
+                    else if (parseState !== PARSER_UNINITIALISED) {
                         parseState = PARSER_TAG_STRING;
                     }
 
@@ -112,6 +116,9 @@ var XRegexp = require('xregexp').XRegExp;
                     if (parseState === PARSER_TAG_STRING_SINGLE) {
                         parseState = PARSER_TAG_COMMENCED;
 
+                    } else if (parseState === PARSER_TAG_STRING) {
+                        // if single quote is found in a double quote string, ignore it and let the string finish
+                        break;
                     } else if (parseState !== PARSER_UNINITIALISED) {
                         parseState = PARSER_TAG_STRING_SINGLE;
                     }

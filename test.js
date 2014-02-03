@@ -10,6 +10,11 @@ describe("Word-wise truncation", function () {
             .should.equal("<p>this is a <strong>test of</strong></p>");
     });
 
+    it("should be able to truncate even if a single quote is found inside a string of double quotes or vice-versa", function () {
+        downsize('<p><img src="/someUrl.jpg" alt="Let\'s get in!"></p><p>hello world</p>', { words: 1 })
+            .should.equal('<p><img src="/someUrl.jpg" alt="Let\'s get in!"></p><p>hello</p>');
+    });
+
     it("should be able to naively balance HTML markup", function () {
         downsize("<p><p><p><p>this is a <strong>test of word downsizing</strong> some stuff</p>", {words: 5})
             .should.equal("<p><p><p><p>this is a <strong>test of</strong></p></p></p></p>");
