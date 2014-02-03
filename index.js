@@ -45,7 +45,8 @@ var XRegexp = require('xregexp').XRegExp;
                         track.unitCount++;
                 }
 
-                // We pass in empty values to count word boundries defined by tags.
+                // We pass in empty values to count word boundries
+                // defined by tags.
                 // This isn't relevant to character truncation.
             } else if (chr !== "") {
 
@@ -103,10 +104,11 @@ var XRegexp = require('xregexp').XRegExp;
                         parseState = PARSER_TAG_COMMENCED;
 
                     } else if (parseState === PARSER_TAG_STRING_SINGLE) {
-                        // if double quote is found in a single quote string, ignore it and let the string finish
+                        // if double quote is found in a single quote string,
+                        // ignore it and let the string finish
                         break;
-                    }
-                    else if (parseState !== PARSER_UNINITIALISED) {
+
+                    } else if (parseState !== PARSER_UNINITIALISED) {
                         parseState = PARSER_TAG_STRING;
                     }
 
@@ -117,8 +119,10 @@ var XRegexp = require('xregexp').XRegExp;
                         parseState = PARSER_TAG_COMMENCED;
 
                     } else if (parseState === PARSER_TAG_STRING) {
-                        // if single quote is found in a double quote string, ignore it and let the string finish
+                        // if single quote is found in a double quote string,
+                        // ignore it and let the string finish
                         break;
+
                     } else if (parseState !== PARSER_UNINITIALISED) {
                         parseState = PARSER_TAG_STRING_SINGLE;
                     }
@@ -140,7 +144,7 @@ var XRegexp = require('xregexp').XRegExp;
                             // tags. If the text to be truncated contains
                             // malformed nesting, we just close what we're
                             // permitted to and clean up at the end.
-                            if (getTagName(stack[stack.length - 1]) === tagName) {
+                            if (getTagName(stack[stack.length-1]) === tagName) {
                                 stack.pop();
                             }
 
@@ -150,7 +154,8 @@ var XRegexp = require('xregexp').XRegExp;
                             // Don't push self closing or void elements on to
                             // the stack, since they have no effect on nesting.
 
-                            if (voidElements.indexOf(tagName) < 0 && !tagBuffer.match(/\/\s*>$/)) {
+                            if (voidElements.indexOf(tagName) < 0 &&
+                                !tagBuffer.match(/\/\s*>$/)) {
 
                                 stack.push(tagBuffer);
                             }
