@@ -87,6 +87,11 @@ describe("Word-wise truncation", function () {
         downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15})
             .should.equal("<p>abcdefghij</p><p>klmno</p>");
     });
+
+    it("should properly properly truncate to zero words", function () {
+        downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 0})
+            .should.equal("<p></p><p></p>");
+    });
 });
 
 describe("Appending", function () {
