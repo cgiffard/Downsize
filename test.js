@@ -87,6 +87,17 @@ describe("Word-wise truncation", function () {
         downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15})
             .should.equal("<p>abcdefghij</p><p>klmno</p>");
     });
+
+    it("should await the end of the containing paragraph", function () {
+        downsize("<p>there are more than seven words in this paragraph</p><p>this is unrelated</p>", {words: 7, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]})
+            .should.equal("<p>there are more than seven words in this paragraph</p>");
+    });
+
+    it("should await the end of the containing unordered list", function () {
+        downsize("<ul><li>item one</li><li>item two</li><li>item three</li></ul><p>paragraph</p>", {characters: 20, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]})
+            .should.equal("<ul><li>item one</li><li>item two</li><li>item three</li></ul>");
+    });
+
 });
 
 describe("Appending", function () {
@@ -114,7 +125,7 @@ describe("Performance", function () {
         it("benchmark time should be under twenty seconds", function () {
             var startTime = Date.now();
             for (i = 0; i < 100000; i++) {
-                downsize(perfTestSeed, {"words": 5});
+                downsize(perfTestSeed, {"words": 5, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]});
             }
             (Date.now() - startTime).should.be.lte(20*1000);
         });
