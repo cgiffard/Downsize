@@ -93,6 +93,21 @@ describe("Word-wise truncation", function () {
             .should.equal("<p>there are five words here</p>");
     });
 
+    it("should await the end of the containing paragraph", function () {
+        downsize("<p>there are more than seven words in this paragraph</p><p>this is unrelated</p>", {words: 7, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]})
+            .should.equal("<p>there are more than seven words in this paragraph</p>");
+    });
+
+    it("should await the end of the containing unordered list", function () {
+        downsize("<ul><li>item one</li><li>item two</li><li>item three</li></ul><p>paragraph</p>", {words: 5, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]})
+            .should.equal("<ul><li>item one</li><li>item two</li><li>item three</li></ul>");
+    });
+
+    it("should await the end of the containing paragraph", function () {
+        downsize("<p>there are many more than seven characters in this paragraph</p><p>this is unrelated</p>", {characters: 7, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]})
+            .should.equal("<p>there are many more than seven characters in this paragraph</p>");
+    });
+
 });
 
 describe("Appending", function () {
