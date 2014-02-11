@@ -87,6 +87,12 @@ describe("Word-wise truncation", function () {
         downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15})
             .should.equal("<p>abcdefghij</p><p>klmno</p>");
     });
+
+    it("should not have trailing empty tags", function () {
+        downsize("<p>there are five words here</p><i>what</i>", {words: 5})
+            .should.equal("<p>there are five words here</p>");
+    });
+
 });
 
 describe("Appending", function () {

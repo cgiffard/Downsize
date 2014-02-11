@@ -164,11 +164,9 @@ var XRegexp = require('xregexp').XRegExp;
                         tagBuffer = "";
 
                         // Closed tags are word boundries. Count!
-                        count("", countState);
-
                         // Because we've reset our parser state we need
                         // to manually short circuit the logic that comes next.
-                        continue;
+                        if (!count("", countState)) continue;
                     }
 
                     if (parseState === PARSER_COMMENT &&
@@ -179,10 +177,7 @@ var XRegexp = require('xregexp').XRegExp;
                         tagBuffer = "";
 
                         // Closed tags are word boundries. Count!
-                        count("", countState);
-
-                        // Another cleanup short-circuit...
-                        continue;
+                        if (!count("", countState)) continue;
                     }
 
                     break;
