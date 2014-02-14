@@ -20,16 +20,19 @@ var XRegexp = require('xregexp').XRegExp;
             truncatedText = "";
 
         var options = options && typeof options === "object" ? options : {},
-            keepContext = !!options.contextualTags,
-            contextualTags = keepContext && Array.isArray(options.contextualTags) ? options.contextualTags : [],
             wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : XRegexp("[\\p{L}0-9\\-\\']", "i");
+
+        var keepContext = !!options.contextualTags,
+            contextualTags = (
+                keepContext && Array.isArray(options.contextualTags) ?
+                    options.contextualTags : []
+            );
 
         function count(chr, track) {
             var limit = options.words || (options.characters + 1) || Infinity,
                 contextualTagPresent = false,
-                i,
-                j;
+                stackIndex = 0;
 
             if (!("unitCount" in track))
                 track.unitCount = 0;
@@ -59,22 +62,19 @@ var XRegexp = require('xregexp').XRegExp;
             }
 
             // Return true when we've hit our limit
-            if (track.unitCount < limit) {
+            if (track.unitCount < limit)
                 return false;
-            } else {
-                if (!keepContext) {
-                    return true;
-                }
-                for (i = 0; i < contextualTags.length; i++) {
-                    for (j = 0; j < stack.length; j++) {
-                        if (contextualTags[i] === getTagName(stack[j])){
-                            return false;
-                        }
-                    }
-                }
-                // There are no contextual tags left, we can stop.
+
+            // If we've got no special context to retain, do an early return.
+            if (!keepContext)
                 return true;
-            }
+            
+            for (; stackIndex < stack.length; stackIndex++)
+                if (~contextualTags.indexOf(getTagName(stack[stackIndex])))
+                    return false;
+
+            // There are no contextual tags left, we can stop.
+            return true;
         }
 
         // Define our parse states
