@@ -105,12 +105,12 @@ describe("Word-wise truncation", function () {
 
     it("should handle truncation to zero words", function () {
         downsize("<p>this is a <strong>test of word downsizing</strong></p>", {words: 0})
-            .should.equal("<p></p>");
+            .should.equal("");
     });
 
     it("should handle truncation to zero words with a string number input for backwards compatibility", function () {
         downsize("<p>this is a <strong>test of word downsizing</strong></p>", {words: "0"})
-            .should.equal("<p></p>");
+            .should.equal("");
     });
 
 });

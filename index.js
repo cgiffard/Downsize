@@ -90,7 +90,8 @@ var XRegexp = require('xregexp').XRegExp;
             PARSER_TAG_STRING_SINGLE = -2,
             PARSER_COMMENT = -3;
 
-        for (; pointer < text.length; pointer++) {
+        var exit = false;
+        for (; pointer < text.length && !exit; pointer++) {
 
             if (parseState !== PARSER_UNINITIALISED) {
                 tagBuffer += text[pointer];
@@ -102,9 +103,13 @@ var XRegexp = require('xregexp').XRegExp;
                     // Ooh look — we're starting a new tag.
                     // (Provided we're in uninitialised state and the next
                     // character is a word character, explamation mark or slash)
+
                     if (parseState === PARSER_UNINITIALISED &&
                         text[pointer + 1].match(/[a-z0-9\-\_\/\!]/)) {
-
+                        if (isAtLimit()) {
+                            exit = true;
+                            break;
+                        }
                         parseState = PARSER_TAG_COMMENCED;
                         tagBuffer += text[pointer];
                     }
