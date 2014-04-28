@@ -36,8 +36,30 @@ var XRegexp = require('xregexp').XRegExp;
         var limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
             Number(options.characters) + 1;
 
-        function count(chr) {
+        function isAtLimit() {
             var stackIndex = 0;
+
+            // Return true when we've hit our limit
+            if (trackedState.unitCount < limit) {
+                return false;
+            }
+
+            // If we've got no special context to retain, do an early return.
+            if (!keepContext) {
+                return true;
+            }
+
+            for (; stackIndex < stack.length; stackIndex++) {
+                if (~contextualTags.indexOf(getTagName(stack[stackIndex]))) {
+                    return false;
+                }
+            }
+
+            // There are no contextual tags left, we can stop.
+            return true;
+        }
+
+        function count(chr) {
 
             if (!("unitCount" in trackedState)) {
                 trackedState.unitCount = 0;
@@ -72,25 +94,6 @@ var XRegexp = require('xregexp').XRegExp;
                     }
                     break;
             }
-
-            // Return true when we've hit our limit
-            if (trackedState.unitCount < limit) {
-                return false;
-            }
-
-            // If we've got no special context to retain, do an early return.
-            if (!keepContext) {
-                return true;
-            }
-            
-            for (; stackIndex < stack.length; stackIndex++) {
-                if (~contextualTags.indexOf(getTagName(stack[stackIndex]))) {
-                    return false;
-                }
-            }
-
-            // There are no contextual tags left, we can stop.
-            return true;
         }
 
         // Define our parse states
@@ -203,7 +206,8 @@ var XRegexp = require('xregexp').XRegExp;
                         // Closed tags are word boundries. Count!
                         // Because we've reset our parser state we need
                         // to manually short circuit the logic that comes next.
-                        if (!count("")) {
+                        count("");
+                        if (!isAtLimit()) {
                             continue;
                         }
                     }
@@ -216,7 +220,8 @@ var XRegexp = require('xregexp').XRegExp;
                         tagBuffer = "";
 
                         // Closed tags are word boundries. Count!
-                        if (!count("")) {
+                        count("");
+                        if (!isAtLimit()) {
                             continue;
                         }
                     }
@@ -229,7 +234,8 @@ var XRegexp = require('xregexp').XRegExp;
             if (!parseState) {
 
                 // Have we had enough of a good thing?
-                if (count(text[pointer])) {
+                count(text[pointer]);
+                if (isAtLimit()) {
                     break;
                 }
 
