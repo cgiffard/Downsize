@@ -31,7 +31,7 @@ var XRegexp = require('xregexp').XRegExp;
             Array.isArray(options.contextualTags) ?
                 options.contextualTags : [];
         options.limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
-            Number(options.characters) + 1;
+            Number(options.characters);
         options.limit = isNaN(options.limit) ? Infinity : options.limit;
 
         function isAtLimit() {
@@ -58,6 +58,10 @@ var XRegexp = require('xregexp').XRegExp;
         }
 
         function count(chr) {
+            // TODO: 'Tock' for word counting happens when next whitespace is added.
+            //        i.e. it then needs stripping.
+            //        Should a pointer be passed to count instead of the chr?
+            //        This would allow forward lookup and allow 'Tock' on final char.
             switch (options.countingType) {
                 case COUNT_WORDS:
                     if (!!wordChars.test(chr + "") !== trackedState.countState) {
@@ -195,8 +199,8 @@ var XRegexp = require('xregexp').XRegExp;
                         tagBuffer = "";
 
                         // Closed tags are word boundries. Count!
-                        count("");
                         if (!isAtLimit()) {
+                            count("");
                             continue;
                         }
 
@@ -207,8 +211,8 @@ var XRegexp = require('xregexp').XRegExp;
                             tagBuffer = "";
 
                             // Closed tags are word boundries. Count!
-                            count("");
                             if (!isAtLimit()) {
+                                count("");
                                 continue;
                             }
                         }
@@ -222,10 +226,12 @@ var XRegexp = require('xregexp').XRegExp;
             if (parseState === PARSER_UNINITIALISED) {
 
                 // Have we had enough of a good thing?
-                count(text[pointer]);
                 if (isAtLimit()) {
+                    // console.log("limit at: '" + text[pointer] +"'");
+                    // console.log(trackedState.unitCount);
                     break;
                 }
+                count(text[pointer]);
 
                 // Nope, we still thirst for more.
                 truncatedText += text[pointer];
@@ -233,8 +239,13 @@ var XRegexp = require('xregexp').XRegExp;
 
         } // end of main parsing for loop
 
+        // 'Tock' for word counting happens when next whitespace is added.
+        // Strip this and any other trailing whitespace.
+        // TODO: what should the whitespace behavior be?
+        truncatedText = truncatedText.trim();
+
         if (options.append && (stack.length || tagBuffer.length)) {
-            truncatedText = truncatedText.trim() + options.append;
+            truncatedText += options.append;
         }
 
         // Append anything still left in the buffer

@@ -153,6 +153,12 @@ describe("Appending", function () {
         downsize("<p>here's some text.</p>", {words: 5, append: "..."})
             .should.equal("<p>here's some text.</p>");
     });
+
+    it("should not have trailing empty tags", function () {
+        downsize("<p>characters</p><i>what</i>", {characters: 10})
+            .should.equal("<p>characters</p>");
+    });
+
 });
 
 describe("Performance", function () {
