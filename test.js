@@ -161,6 +161,33 @@ describe("Appending", function () {
 
 });
 
+describe("Ghost initial image hack", function () {
+    it("should work for anchored case", function () {
+        downsize('<p><a href="http://google.com"><img src="http://google.com/imaglol.png" /></a></p><p>hello</p><p>world</p>', {characters: 0, ghostKeepInitialImage: true})
+            .should.equal('<p><a href="http://google.com"><img src="http://google.com/imaglol.png" /></a></p>');
+    });
+
+    it("should work for anchorless case", function () {
+        downsize('<p><img src="http://google.com/imaglol.png" /></p><p>hello</p><p>world</p>', {words: 0, ghostKeepInitialImage: true})
+            .should.equal('<p><img src="http://google.com/imaglol.png" /></p>');
+    });
+
+    it("should work with input with attribs", function () {
+        downsize('<p><a href="http://google.com" id="lols" class="rofl"><img src="http://google.com/imaglol.png"  id="lols1" class="rofl1"/></a></p><p>hello</p><p>world</p>', {characters: 0, ghostKeepInitialImage: true})
+            .should.equal('<p><a href="http://google.com" id="lols" class="rofl"><img src="http://google.com/imaglol.png"  id="lols1" class="rofl1"/></a></p>');
+    });
+
+    it("should work with input with nonzero char selection", function () {
+        downsize('<p><a href="http://google.com" id="lols" class="rofl"><img src="http://google.com/imaglol.png"  id="lols1" class="rofl1"/></a></p><p>hello</p><p>world</p>', {characters: 4, ghostKeepInitialImage: true})
+            .should.equal('<p><a href="http://google.com" id="lols" class="rofl"><img src="http://google.com/imaglol.png"  id="lols1" class="rofl1"/></a></p><p>hell</p>');
+    });
+
+    it("should work with input with nonzero word selection", function () {
+        downsize('<p><a href="http://google.com" id="lols" class="rofl"><img src="http://google.com/imaglol.png"  id="lols1" class="rofl1"/></a></p><p>hello</p><p>world</p>', {words: 1, ghostKeepInitialImage: true})
+            .should.equal('<p><a href="http://google.com" id="lols" class="rofl"><img src="http://google.com/imaglol.png"  id="lols1" class="rofl1"/></a></p><p>hello</p>');
+    });
+});
+
 describe("Performance", function () {
     var perfTestSeed = "";
     for (var i = 0; i < 1000000; i++) {

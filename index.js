@@ -10,6 +10,9 @@ var XRegexp = require('xregexp').XRegExp;
         "keygen", "link", "meta", "param", "source", "track", "wbr"
     ];
 
+    var ghostInitialImageMatch =
+        /(?:^<p><a[^>]*><img[^>]*\/><\/a><\/p>)|(?:^<p><img[^>]*\/><\/p>)/;
+
     var downsize = function (text, inputOptions, offset) {
         var stack = [],
             pointer = 0,
@@ -17,13 +20,14 @@ var XRegexp = require('xregexp').XRegExp;
             parseState = 0,
             trackedState = {unitCount: 0, countState: false},
             tagBuffer = "",
-            truncatedText = "";
+            truncatedText = "",
+            prefix = "";
 
         var COUNT_CHARACTERS = -1,
             COUNT_WORDS = -2;
 
-        var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
-            wordChars = options.wordChars instanceof RegExp ?
+        var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {};
+        options.wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
         options.countingType = !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
         options.keepContext = !!options.contextualTags;
@@ -33,6 +37,15 @@ var XRegexp = require('xregexp').XRegExp;
         options.limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
             Number(options.characters);
         options.limit = isNaN(options.limit) ? Infinity : options.limit;
+        options.ghostKeepInitialImage = !!options.ghostKeepInitialImage;
+
+        if (options.ghostKeepInitialImage) {
+            var match = text.match(ghostInitialImageMatch);
+            if (match) {
+                prefix = match[0];
+                text = text.substring(prefix.length);
+            }
+        }
 
         function isAtLimit() {
             var stackIndex = 0;
@@ -64,9 +77,9 @@ var XRegexp = require('xregexp').XRegExp;
             //        This would allow forward lookup and allow 'Tock' on final char.
             switch (options.countingType) {
                 case COUNT_WORDS:
-                    if (!!wordChars.test(chr + "") !== trackedState.countState) {
+                    if (!!options.wordChars.test(chr + "") !== trackedState.countState) {
 
-                        trackedState.countState = !!wordChars.test(chr + "");
+                        trackedState.countState = !!options.wordChars.test(chr + "");
 
                         // Only count the words on the "tock", or we'd be counting
                         // them twice.
@@ -254,6 +267,10 @@ var XRegexp = require('xregexp').XRegExp;
         // Balance anything still left on the stack
         while (stack.length) {
             truncatedText += closeTag(stack.pop());
+        }
+
+        if (options.ghostKeepInitialImage) {
+            truncatedText = prefix + truncatedText;
         }
 
         return truncatedText;
