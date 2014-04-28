@@ -83,10 +83,6 @@ describe("Word-wise truncation", function () {
             .should.equal("<p>Рэпудёандаэ конжыквуюнтюр эю</p>");
     });
 
-    it("should properly properly character-truncate across tag boundries", function () {
-        downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15})
-            .should.equal("<p>abcdefghij</p><p>klmno</p>");
-    });
 
     it("should not have trailing empty tags", function () {
         downsize("<p>there are five words here</p><i>what</i>", {words: 5})
@@ -103,6 +99,18 @@ describe("Word-wise truncation", function () {
             .should.equal("<ul><li>item one</li><li>item two</li><li>item three</li></ul>");
     });
 
+});
+
+describe("Character based truncation", function () {
+    it("should properly character-truncate across tag boundries", function () {
+        downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15})
+            .should.equal("<p>abcdefghij</p><p>klmno</p>");
+
+        downsize("<p>a</p><p>b</p><p>cdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15})
+            .should.equal("<p>a</p><p>b</p><p>cdefghij</p><p>klmno</p>");
+
+    });
+
     it("should await the end of the containing paragraph", function () {
         downsize("<p>there are many more than seven characters in this paragraph</p><p>this is unrelated</p>", {characters: 7, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]})
             .should.equal("<p>there are many more than seven characters in this paragraph</p>");
@@ -111,10 +119,12 @@ describe("Word-wise truncation", function () {
 });
 
 describe("Appending", function () {
-    it("should properly append an ellipsis where required", function () {
+    it("should properly append an ellipsis where required for word truncation", function () {
         downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15, append: "..."})
             .should.equal("<p>abcdefghij</p><p>klmno...</p>");
+    });
 
+    it("should properly append an ellipsis where required for character truncation", function () {
         downsize("<p>here's some text.</p>", {words: 2, append: "... (read more)"})
             .should.equal("<p>here's some... (read more)</p>");
     });
