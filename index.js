@@ -15,7 +15,7 @@ var XRegexp = require('xregexp').XRegExp;
             pointer = 0,
             tagName = "",
             parseState = 0,
-            trackedState = {},
+            trackedState = {unitCount: 0, countState: false},
             tagBuffer = "",
             truncatedText = "";
 
@@ -58,17 +58,6 @@ var XRegexp = require('xregexp').XRegExp;
         }
 
         function count(chr) {
-
-            if (!("unitCount" in trackedState)) {
-                trackedState.unitCount = 0;
-            }
-
-            // Tick-tock state storage for counting words
-            // If it doesn't exist, initialise it with value of current char
-            if (!("countState" in trackedState)) {
-                trackedState.countState = !!wordChars.test(chr + "");
-            }
-
             switch (options.countingType) {
                 case COUNT_WORDS:
                     if (!!wordChars.test(chr + "") !== trackedState.countState) {
@@ -186,15 +175,14 @@ var XRegexp = require('xregexp').XRegExp;
                                 stack.pop();
                             }
 
-                            // Nope, it's an opening tag.
                         } else {
+                            // Nope, it's an opening tag.
 
                             // Don't push self closing or void elements on to
                             // the stack, since they have no effect on nesting.
 
                             if (voidElements.indexOf(tagName) < 0 &&
                                 !tagBuffer.match(/\/\s*>$/)) {
-
                                 stack.push(tagBuffer);
                             }
                         }
@@ -202,29 +190,26 @@ var XRegexp = require('xregexp').XRegExp;
                         tagBuffer = "";
 
                         // Closed tags are word boundries. Count!
-                        // Because we've reset our parser state we need
-                        // to manually short circuit the logic that comes next.
                         count("");
                         if (!isAtLimit()) {
                             continue;
                         }
-                    }
 
-                    if (parseState === PARSER_COMMENT &&
-                        text.substring(pointer - 2, pointer) === "--") {
+                    } else if (parseState === PARSER_COMMENT) {
+                        if (text.substring(pointer - 2, pointer) === "--") {
+                            parseState = PARSER_UNINITIALISED;
+                            truncatedText += tagBuffer;
+                            tagBuffer = "";
 
-                        parseState = PARSER_UNINITIALISED;
-                        truncatedText += tagBuffer;
-                        tagBuffer = "";
-
-                        // Closed tags are word boundries. Count!
-                        count("");
-                        if (!isAtLimit()) {
-                            continue;
+                            // Closed tags are word boundries. Count!
+                            count("");
+                            if (!isAtLimit()) {
+                                continue;
+                            }
                         }
                     }
 
-                    break;
+                    break; // break switch
             }
 
             // We're not inside a tag, comment, attribute, or string.
@@ -240,7 +225,8 @@ var XRegexp = require('xregexp').XRegExp;
                 // Nope, we still thirst for more.
                 truncatedText += text[pointer];
             }
-        }
+
+        } // end of main parsing for loop
 
         if (options.append && (stack.length || tagBuffer.length)) {
             truncatedText = truncatedText.trim() + options.append;
