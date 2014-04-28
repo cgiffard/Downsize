@@ -229,7 +229,7 @@ var XRegexp = require('xregexp').XRegExp;
 
             // We're not inside a tag, comment, attribute, or string.
             // This is just text.
-            if (!parseState) {
+            if (parseState === PARSER_UNINITIALISED) {
 
                 // Have we had enough of a good thing?
                 count(text[pointer]);
