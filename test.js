@@ -5,6 +5,11 @@ chai.should();
 
 describe("Word-wise truncation", function () {
 
+    it("should be able to handle tagless input", function () {
+        downsize("this is a test of tagless input", {words: 5})
+            .should.equal("this is a test of");
+    });
+
     it("should be able to truncate across nested tags", function () {
         downsize("<p>this is a <strong>test of word downsizing</strong></p>", {words: 5})
             .should.equal("<p>this is a <strong>test of</strong></p>");
@@ -111,6 +116,12 @@ describe("Word-wise truncation", function () {
 });
 
 describe("Character based truncation", function () {
+
+    it("should be able to handle tagless input", function () {
+        downsize("this is a test of tagless input", {characters: 6})
+            .should.equal("this i");
+    });
+
     it("should properly character-truncate across tag boundries", function () {
         downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15})
             .should.equal("<p>abcdefghij</p><p>klmno</p>");
