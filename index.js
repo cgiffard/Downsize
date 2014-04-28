@@ -10,18 +10,18 @@ var XRegexp = require('xregexp').XRegExp;
         "keygen", "link", "meta", "param", "source", "track", "wbr"
     ];
 
-    var downsize = function (text, options, offset) {
+    var downsize = function (text, inputOptions, offset) {
         var stack = [],
             pointer = 0,
             tagName = "",
             parseState = 0,
-            countState = {},
+            trackedState = {},
             tagBuffer = "",
             truncatedText = "";
 
-        var options = options && typeof options === "object" ? options : {},
+        var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
-                options.wordChars : XRegexp("[\\p{L}0-9\\-\\']", "i");
+                options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
 
         var keepContext = !!options.contextualTags,
             contextualTags = (
@@ -29,49 +29,57 @@ var XRegexp = require('xregexp').XRegExp;
                     options.contextualTags : []
             );
 
-        function count(chr, track) {
+        function count(chr) {
             var limit = options.words || (options.characters + 1) || Infinity,
                 contextualTagPresent = false,
                 stackIndex = 0;
 
-            if (!("unitCount" in track))
-                track.unitCount = 0;
+            if (!("unitCount" in trackedState)) {
+                trackedState.unitCount = 0;
+            }
 
             // Tick-tock state storage for counting words
             // If it doesn't exist, initialise it with value of current char
-            if (!("countState" in track))
-                track.countState = !!wordChars.test(chr + "");
+            if (!("countState" in trackedState)) {
+                trackedState.countState = !!wordChars.test(chr + "");
+            }
 
             if (options.words) {
-                if (!!wordChars.test(chr + "") !== track.countState) {
+                if (!!wordChars.test(chr + "") !== trackedState.countState) {
 
-                    track.countState = !!wordChars.test(chr + "");
+                    trackedState.countState = !!wordChars.test(chr + "");
 
                     // Only count the words on the "tock", or we'd be counting
                     // them twice.
-                    if (!track.countState)
-                        track.unitCount++;
+                    if (!trackedState.countState) {
+                        trackedState.unitCount++;
+                    }
                 }
 
+            } else if (options.characters) {
                 // We pass in empty values to count word boundries
                 // defined by tags.
                 // This isn't relevant to character truncation.
-            } else if (chr !== "") {
-
-                track.unitCount++;
+                if (chr !== "") {
+                    trackedState.unitCount++;
+                }
             }
 
             // Return true when we've hit our limit
-            if (track.unitCount < limit)
+            if (trackedState.unitCount < limit) {
                 return false;
+            }
 
             // If we've got no special context to retain, do an early return.
-            if (!keepContext)
+            if (!keepContext) {
                 return true;
+            }
             
-            for (; stackIndex < stack.length; stackIndex++)
-                if (~contextualTags.indexOf(getTagName(stack[stackIndex])))
+            for (; stackIndex < stack.length; stackIndex++) {
+                if (~contextualTags.indexOf(getTagName(stack[stackIndex]))) {
                     return false;
+                }
+            }
 
             // There are no contextual tags left, we can stop.
             return true;
@@ -86,8 +94,9 @@ var XRegexp = require('xregexp').XRegExp;
 
         for (; pointer < text.length; pointer++) {
 
-            if (parseState !== PARSER_UNINITIALISED)
+            if (parseState !== PARSER_UNINITIALISED) {
                 tagBuffer += text[pointer];
+            }
 
             switch (text[pointer]) {
 
@@ -186,7 +195,9 @@ var XRegexp = require('xregexp').XRegExp;
                         // Closed tags are word boundries. Count!
                         // Because we've reset our parser state we need
                         // to manually short circuit the logic that comes next.
-                        if (!count("", countState)) continue;
+                        if (!count("", trackedState)) {
+                            continue;
+                        }
                     }
 
                     if (parseState === PARSER_COMMENT &&
@@ -197,7 +208,9 @@ var XRegexp = require('xregexp').XRegExp;
                         tagBuffer = "";
 
                         // Closed tags are word boundries. Count!
-                        if (!count("", countState)) continue;
+                        if (!count("", trackedState)) {
+                            continue;
+                        }
                     }
 
                     break;
@@ -208,7 +221,9 @@ var XRegexp = require('xregexp').XRegExp;
             if (!parseState) {
 
                 // Have we had enough of a good thing?
-                if (count(text[pointer], countState)) break;
+                if (count(text[pointer], trackedState)) {
+                    break;
+                }
 
                 // Nope, we still thirst for more.
                 truncatedText += text[pointer];
@@ -236,7 +251,9 @@ var XRegexp = require('xregexp').XRegExp;
 
         // We didn't get a tag name, so return nothing. Better than
         // a bad prediction, or a junk tag.
-        if (!tagName) return "";
+        if (!tagName) {
+            return "";
+        }
 
         return "</" + tagName + ">";
     }
@@ -247,8 +264,9 @@ var XRegexp = require('xregexp').XRegExp;
     }
 
     // Export to node
-    if (typeof module !== 'undefined' && module.exports)
+    if (typeof module !== 'undefined' && module.exports) {
         return module.exports = downsize;
+    }
 
     // Nope, export to the browser instead.
     exportTo.downsize = downsize;
