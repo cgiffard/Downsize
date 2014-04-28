@@ -19,9 +19,13 @@ var XRegexp = require('xregexp').XRegExp;
             tagBuffer = "",
             truncatedText = "";
 
+        var COUNT_CHARACTERS = -1,
+            COUNT_WORDS = -2;
+
         var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
+        options.countingType = !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
 
         var keepContext = !!options.contextualTags,
             contextualTags = (
@@ -29,10 +33,11 @@ var XRegexp = require('xregexp').XRegExp;
                     options.contextualTags : []
             );
 
+        var limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
+            Number(options.characters) + 1;
+
         function count(chr) {
-            var limit = options.words || (options.characters + 1) || Infinity,
-                contextualTagPresent = false,
-                stackIndex = 0;
+            var stackIndex = 0;
 
             if (!("unitCount" in trackedState)) {
                 trackedState.unitCount = 0;
@@ -44,25 +49,28 @@ var XRegexp = require('xregexp').XRegExp;
                 trackedState.countState = !!wordChars.test(chr + "");
             }
 
-            if (options.words) {
-                if (!!wordChars.test(chr + "") !== trackedState.countState) {
+            switch (options.countingType) {
+                case COUNT_WORDS:
+                    if (!!wordChars.test(chr + "") !== trackedState.countState) {
 
-                    trackedState.countState = !!wordChars.test(chr + "");
+                        trackedState.countState = !!wordChars.test(chr + "");
 
-                    // Only count the words on the "tock", or we'd be counting
-                    // them twice.
-                    if (!trackedState.countState) {
+                        // Only count the words on the "tock", or we'd be counting
+                        // them twice.
+                        if (!trackedState.countState) {
+                            trackedState.unitCount++;
+                        }
+                    }
+                    break;
+
+                case COUNT_CHARACTERS:
+                    // We pass in empty values to count word boundries
+                    // defined by tags.
+                    // This isn't relevant to character truncation.
+                    if (chr !== "") {
                         trackedState.unitCount++;
                     }
-                }
-
-            } else if (options.characters) {
-                // We pass in empty values to count word boundries
-                // defined by tags.
-                // This isn't relevant to character truncation.
-                if (chr !== "") {
-                    trackedState.unitCount++;
-                }
+                    break;
             }
 
             // Return true when we've hit our limit

@@ -83,7 +83,6 @@ describe("Word-wise truncation", function () {
             .should.equal("<p>Рэпудёандаэ конжыквуюнтюр эю</p>");
     });
 
-
     it("should not have trailing empty tags", function () {
         downsize("<p>there are five words here</p><i>what</i>", {words: 5})
             .should.equal("<p>there are five words here</p>");
@@ -97,6 +96,16 @@ describe("Word-wise truncation", function () {
     it("should await the end of the containing unordered list", function () {
         downsize("<ul><li>item one</li><li>item two</li><li>item three</li></ul><p>paragraph</p>", {words: 5, contextualTags: ["p", "ul", "ol", "pre", "blockquote"]})
             .should.equal("<ul><li>item one</li><li>item two</li><li>item three</li></ul>");
+    });
+
+    it("should handle truncation to zero words", function () {
+        downsize("<p>this is a <strong>test of word downsizing</strong></p>", {words: 0})
+            .should.equal("<p></p>");
+    });
+
+    it("should handle truncation to zero words with a string number input for backwards compatibility", function () {
+        downsize("<p>this is a <strong>test of word downsizing</strong></p>", {words: "0"})
+            .should.equal("<p></p>");
     });
 
 });
