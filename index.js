@@ -26,31 +26,29 @@ var XRegexp = require('xregexp').XRegExp;
             wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
         options.countingType = !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
-
-        var keepContext = !!options.contextualTags,
-            contextualTags = (
-                keepContext && Array.isArray(options.contextualTags) ?
-                    options.contextualTags : []
-            );
-
-        var limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
+        options.keepContext = !!options.contextualTags;
+        options.contextualTags = options.keepContext &&
+            Array.isArray(options.contextualTags) ?
+                options.contextualTags : [];
+        options.limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
             Number(options.characters) + 1;
+        options.limit = isNaN(options.limit) ? Infinity : options.limit;
 
         function isAtLimit() {
             var stackIndex = 0;
 
             // Return true when we've hit our limit
-            if (trackedState.unitCount < limit) {
+            if (trackedState.unitCount < options.limit) {
                 return false;
             }
 
             // If we've got no special context to retain, do an early return.
-            if (!keepContext) {
+            if (!options.keepContext) {
                 return true;
             }
 
             for (; stackIndex < stack.length; stackIndex++) {
-                if (~contextualTags.indexOf(getTagName(stack[stackIndex]))) {
+                if (~options.contextualTags.indexOf(getTagName(stack[stackIndex]))) {
                     return false;
                 }
             }
