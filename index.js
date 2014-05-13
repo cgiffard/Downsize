@@ -10,71 +10,81 @@ var XRegexp = require('xregexp').XRegExp;
         "keygen", "link", "meta", "param", "source", "track", "wbr"
     ];
 
-    var downsize = function (text, options, offset) {
+    var downsize = function (text, inputOptions, offset) {
         var stack = [],
             pointer = 0,
             tagName = "",
             parseState = 0,
-            countState = {},
+            trackedState = {unitCount: 0, countState: false},
             tagBuffer = "",
             truncatedText = "";
 
-        var options = options && typeof options === "object" ? options : {},
+        var COUNT_CHARACTERS = -1,
+            COUNT_WORDS = -2;
+
+        var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
-                options.wordChars : XRegexp("[\\p{L}0-9\\-\\']", "i");
+                options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
+        options.countingType = !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
+        options.keepContext = !!options.contextualTags;
+        options.contextualTags = options.keepContext &&
+            Array.isArray(options.contextualTags) ?
+                options.contextualTags : [];
+        options.limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
+            Number(options.characters);
+        options.limit = isNaN(options.limit) ? Infinity : options.limit;
 
-        var keepContext = !!options.contextualTags,
-            contextualTags = (
-                keepContext && Array.isArray(options.contextualTags) ?
-                    options.contextualTags : []
-            );
-
-        function count(chr, track) {
-            var limit = options.words || (options.characters + 1) || Infinity,
-                contextualTagPresent = false,
-                stackIndex = 0;
-
-            if (!("unitCount" in track))
-                track.unitCount = 0;
-
-            // Tick-tock state storage for counting words
-            // If it doesn't exist, initialise it with value of current char
-            if (!("countState" in track))
-                track.countState = !!wordChars.test(chr + "");
-
-            if (options.words) {
-                if (!!wordChars.test(chr + "") !== track.countState) {
-
-                    track.countState = !!wordChars.test(chr + "");
-
-                    // Only count the words on the "tock", or we'd be counting
-                    // them twice.
-                    if (!track.countState)
-                        track.unitCount++;
-                }
-
-                // We pass in empty values to count word boundries
-                // defined by tags.
-                // This isn't relevant to character truncation.
-            } else if (chr !== "") {
-
-                track.unitCount++;
-            }
+        function isAtLimit() {
+            var stackIndex = 0;
 
             // Return true when we've hit our limit
-            if (track.unitCount < limit)
+            if (trackedState.unitCount < options.limit) {
                 return false;
+            }
 
             // If we've got no special context to retain, do an early return.
-            if (!keepContext)
+            if (!options.keepContext) {
                 return true;
-            
-            for (; stackIndex < stack.length; stackIndex++)
-                if (~contextualTags.indexOf(getTagName(stack[stackIndex])))
+            }
+
+            for (; stackIndex < stack.length; stackIndex++) {
+                if (~options.contextualTags.indexOf(getTagName(stack[stackIndex]))) {
                     return false;
+                }
+            }
 
             // There are no contextual tags left, we can stop.
             return true;
+        }
+
+        function count(chr) {
+            // TODO: 'Tock' for word counting happens when next whitespace is added.
+            //        i.e. it then needs stripping.
+            //        Should a pointer be passed to count instead of the chr?
+            //        This would allow forward lookup and allow 'Tock' on final char.
+            switch (options.countingType) {
+                case COUNT_WORDS:
+                    if (!!wordChars.test(chr + "") !== trackedState.countState) {
+
+                        trackedState.countState = !!wordChars.test(chr + "");
+
+                        // Only count the words on the "tock", or we'd be counting
+                        // them twice.
+                        if (!trackedState.countState) {
+                            trackedState.unitCount++;
+                        }
+                    }
+                    break;
+
+                case COUNT_CHARACTERS:
+                    // We pass in empty values to count word boundries
+                    // defined by tags.
+                    // This isn't relevant to character truncation.
+                    if (chr !== "") {
+                        trackedState.unitCount++;
+                    }
+                    break;
+            }
         }
 
         // Define our parse states
@@ -84,10 +94,12 @@ var XRegexp = require('xregexp').XRegExp;
             PARSER_TAG_STRING_SINGLE = -2,
             PARSER_COMMENT = -3;
 
-        for (; pointer < text.length; pointer++) {
+        var exit = false;
+        for (; pointer < text.length && !exit; pointer++) {
 
-            if (parseState !== PARSER_UNINITIALISED)
+            if (parseState !== PARSER_UNINITIALISED) {
                 tagBuffer += text[pointer];
+            }
 
             switch (text[pointer]) {
 
@@ -95,9 +107,13 @@ var XRegexp = require('xregexp').XRegExp;
                     // Ooh look — we're starting a new tag.
                     // (Provided we're in uninitialised state and the next
                     // character is a word character, explamation mark or slash)
+
                     if (parseState === PARSER_UNINITIALISED &&
                         text[pointer + 1].match(/[a-z0-9\-\_\/\!]/)) {
-
+                        if (isAtLimit()) {
+                            exit = true;
+                            break;
+                        }
                         parseState = PARSER_TAG_COMMENCED;
                         tagBuffer += text[pointer];
                     }
@@ -168,15 +184,14 @@ var XRegexp = require('xregexp').XRegExp;
                                 stack.pop();
                             }
 
-                            // Nope, it's an opening tag.
                         } else {
+                            // Nope, it's an opening tag.
 
                             // Don't push self closing or void elements on to
                             // the stack, since they have no effect on nesting.
 
                             if (voidElements.indexOf(tagName) < 0 &&
                                 !tagBuffer.match(/\/\s*>$/)) {
-
                                 stack.push(tagBuffer);
                             }
                         }
@@ -184,39 +199,53 @@ var XRegexp = require('xregexp').XRegExp;
                         tagBuffer = "";
 
                         // Closed tags are word boundries. Count!
-                        // Because we've reset our parser state we need
-                        // to manually short circuit the logic that comes next.
-                        if (!count("", countState)) continue;
+                        if (!isAtLimit()) {
+                            count("");
+                            continue;
+                        }
+
+                    } else if (parseState === PARSER_COMMENT) {
+                        if (text.substring(pointer - 2, pointer) === "--") {
+                            parseState = PARSER_UNINITIALISED;
+                            truncatedText += tagBuffer;
+                            tagBuffer = "";
+
+                            // Closed tags are word boundries. Count!
+                            if (!isAtLimit()) {
+                                count("");
+                                continue;
+                            }
+                        }
                     }
 
-                    if (parseState === PARSER_COMMENT &&
-                        text.substring(pointer - 2, pointer) === "--") {
-
-                        parseState = PARSER_UNINITIALISED;
-                        truncatedText += tagBuffer;
-                        tagBuffer = "";
-
-                        // Closed tags are word boundries. Count!
-                        if (!count("", countState)) continue;
-                    }
-
-                    break;
+                    break; // break switch
             }
 
             // We're not inside a tag, comment, attribute, or string.
             // This is just text.
-            if (!parseState) {
+            if (parseState === PARSER_UNINITIALISED) {
 
                 // Have we had enough of a good thing?
-                if (count(text[pointer], countState)) break;
+                if (isAtLimit()) {
+                    // console.log("limit at: '" + text[pointer] +"'");
+                    // console.log(trackedState.unitCount);
+                    break;
+                }
+                count(text[pointer]);
 
                 // Nope, we still thirst for more.
                 truncatedText += text[pointer];
             }
-        }
+
+        } // end of main parsing for loop
+
+        // 'Tock' for word counting happens when next whitespace is added.
+        // Strip this and any other trailing whitespace.
+        // TODO: what should the whitespace behavior be?
+        truncatedText = truncatedText.trim();
 
         if (options.append && (stack.length || tagBuffer.length)) {
-            truncatedText = truncatedText.trim() + options.append;
+            truncatedText += options.append;
         }
 
         // Append anything still left in the buffer
@@ -236,7 +265,9 @@ var XRegexp = require('xregexp').XRegExp;
 
         // We didn't get a tag name, so return nothing. Better than
         // a bad prediction, or a junk tag.
-        if (!tagName) return "";
+        if (!tagName) {
+            return "";
+        }
 
         return "</" + tagName + ">";
     }
@@ -247,8 +278,9 @@ var XRegexp = require('xregexp').XRegExp;
     }
 
     // Export to node
-    if (typeof module !== 'undefined' && module.exports)
+    if (typeof module !== 'undefined' && module.exports) {
         return module.exports = downsize;
+    }
 
     // Nope, export to the browser instead.
     exportTo.downsize = downsize;
