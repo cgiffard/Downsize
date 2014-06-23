@@ -154,6 +154,16 @@ describe("Appending", function () {
             .should.equal("<p>here's some text.</p>");
     });
 
+    it("should append an ellipsis for word truncation without HTML", function () {
+        downsize("here's some text.", {words: 2, append: "..."})
+            .should.equal("here's some...");
+    });
+
+    it("should append an ellipsis for character truncation without HTML", function () {
+        downsize("here's some text.", {characters: 6, append: "..."})
+            .should.equal("here's...");
+    });
+
     it("should not have trailing empty tags", function () {
         downsize("<p>characters</p><i>what</i>", {characters: 10})
             .should.equal("<p>characters</p>");
