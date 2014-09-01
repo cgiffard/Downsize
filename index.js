@@ -3,11 +3,22 @@ var XRegexp = require('xregexp').XRegExp;
 (function (exportTo) {
     "use strict";
 
+    // Define our parse states
+    var PARSER_UNINITIALISED = 0,
+        PARSER_TAG_COMMENCED = 1,
+        PARSER_TAG_STRING = -1,
+        PARSER_TAG_STRING_SINGLE = -2,
+        PARSER_COMMENT = -3;
+
     // Nodes which should be considered implicitly self-closing
     // Taken from http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#void-elements
     var voidElements = [
         "area", "base", "br", "col", "command", "embed", "hr", "img", "input",
         "keygen", "link", "meta", "param", "source", "track", "wbr"
+    ];
+
+    var sentenceTerminatorElements = [
+        "br", "p", "ol", "ul", "li", "div", "form", "article", "section", "body", "title", "h1", "h2", "h3", "h4", "h5", "h6", "header", "footer", "main", "dd", "dt", "pre", "figure", "figcapture", "td", "th"
     ];
 
     var downsize = function (text, inputOptions, offset) {
@@ -34,12 +45,37 @@ var XRegexp = require('xregexp').XRegExp;
             Number(options.characters);
         options.limit = isNaN(options.limit) ? Infinity : options.limit;
 
+        function peekTag() {
+            var peek = null;
+            text.slice(pointer).replace(/^(?:<[/]?([a-z]+)?)>/i, function (all, match, position) {
+                peek = match;
+            });
+            return peek;
+        }
+
         function isAtLimit() {
             var stackIndex = 0;
 
             // Return true when we've hit our limit
             if (trackedState.unitCount < options.limit) {
                 return false;
+            }
+
+            if (options.round) {
+                if (parseState !== PARSER_TAG_COMMENCED) {
+                    return false;
+                }
+
+                // If we are at a PARSER_TAG_COMMENCED then sniff the tag and check
+                // whether it's a sentence terminator
+                if (parseState === PARSER_TAG_COMMENCED) {
+                    var tag = peekTag();
+                    if (~sentenceTerminatorElements.indexOf(tag)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
             }
 
             // If we've got no special context to retain, do an early return.
@@ -87,13 +123,6 @@ var XRegexp = require('xregexp').XRegExp;
             }
         }
 
-        // Define our parse states
-        var PARSER_UNINITIALISED = 0,
-            PARSER_TAG_COMMENCED = 1,
-            PARSER_TAG_STRING = -1,
-            PARSER_TAG_STRING_SINGLE = -2,
-            PARSER_COMMENT = -3;
-
         var exit = false;
         for (; pointer < text.length && !exit; pointer++) {
 
@@ -110,11 +139,11 @@ var XRegexp = require('xregexp').XRegExp;
 
                     if (parseState === PARSER_UNINITIALISED &&
                         text[pointer + 1].match(/[a-z0-9\-\_\/\!]/)) {
+                        parseState = PARSER_TAG_COMMENCED;
                         if (isAtLimit()) {
                             exit = true;
                             break;
                         }
-                        parseState = PARSER_TAG_COMMENCED;
                         tagBuffer += text[pointer];
                     }
 
