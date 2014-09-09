@@ -38,16 +38,6 @@ downsize("<p>some markup here...</p>",{"characters": 6, "append": "..."});
 <p>some m...</p>
 ```
 
-### Rounding to end of sentence
-
-```javascript
-downsize("<p>hello there.</p><p>more markup</p>",{"characters": 6, "round": true});
-```
-
-```html
-<p>hello there.</p>
-```
-
 ## Notes
 
 Downsize is designed to handle bad markup, and should count words and 
