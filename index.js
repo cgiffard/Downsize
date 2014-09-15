@@ -26,6 +26,11 @@ var XRegexp = require('xregexp').XRegExp;
             wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
         options.countingType = !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
+        if (options.round) {
+            // These tags are intended to be sufficient to provide ghost markdown construct level context.
+            // http://support.ghost.org/markdown-guide/
+            options.contextualTags = ["p", "ul", "ol", "pre", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6"];
+        }
         options.keepContext = !!options.contextualTags;
         options.contextualTags = options.keepContext &&
             Array.isArray(options.contextualTags) ?

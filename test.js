@@ -171,6 +171,25 @@ describe("Appending", function () {
 
 });
 
+describe("Rounding", function () {
+    it("should round a sentence up", function () {
+        downsize("<p>abcdefghij</p><p>klmnop</p><p>qrs</p>", {characters: 15, round: true})
+            .should.equal("<p>abcdefghij</p><p>klmnop</p>");
+    });
+    it("should handle sentences shorter than required", function () {
+        downsize("<p>here's some text.</p>", {words: 5, round: true})
+            .should.equal("<p>here's some text.</p>");
+    });
+    it("should round up to end of sentence, not just next tag", function () {
+        downsize("<p>here's <em>some</em> text.</p>", {characters: 2, round: true})
+            .should.equal("<p>here's <em>some</em> text.</p>");
+    });
+    it("should not have trailing empty tags", function () {
+        downsize("<p>characters</p><i>what</i>", {characters: 10, round: true})
+            .should.equal("<p>characters</p>");
+    });
+});
+
 describe("Performance", function () {
     var perfTestSeed = "";
     for (var i = 0; i < 1000000; i++) {
