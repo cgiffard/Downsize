@@ -38,6 +38,16 @@ downsize("<p>some markup here...</p>",{"characters": 6, "append": "..."});
 <p>some m...</p>
 ```
 
+### Rounding to the end of the paragraph
+
+```javascript
+downsize("<p>Why, hello there!</p><p>Hello again!</p>",{"characters": 6, round:true});
+```
+
+```html
+<p>Why, hello there!</p>
+```
+
 ## Notes
 
 Downsize is designed to handle bad markup, and should count words and 
@@ -51,3 +61,10 @@ for which the opening tag couldn't be found or was erroneously nested.
 ```sh
 npm test
 ```
+
+## Maintainers
+
+* [Christopher Giffard]([http://github.com/cgiffard)
+* [Adam Zethraeus]([http://github.com/zethraeus)
+
+[Thanks also to all the contributors!](https://github.com/cgiffard/Downsize/graphs/contributors)

@@ -196,8 +196,11 @@ describe("Performance", function () {
         perfTestSeed += "<p>word truncate performance test</p>\n";
     }
 
+	// This is more or less testing whether downsize correctly short-circuits
+	// processing /all/ the text. But that's important as a regression test.
     describe("truncate five words from a four-million word corpus one hundred thousand times", function () {
         it("benchmark time should be under twenty seconds", function () {
+			this.timeout(20*1000)
             var startTime = Date.now();
             for (i = 0; i < 100000; i++) {
                 downsize(perfTestSeed, {"words": 5});

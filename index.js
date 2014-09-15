@@ -10,6 +10,14 @@ var XRegexp = require('xregexp').XRegExp;
         "keygen", "link", "meta", "param", "source", "track", "wbr"
     ];
 
+    // These tags are intended to be sufficient to provide ghost markdown
+    // construct level context.
+    // http://support.ghost.org/markdown-guide/
+    var defaultContextualTags = [
+        "p", "ul", "ol", "pre", "blockquote",
+        "h1", "h2", "h3", "h4", "h5", "h6"
+    ];
+
     var downsize = function (text, inputOptions, offset) {
         var stack = [],
             pointer = 0,
@@ -25,18 +33,23 @@ var XRegexp = require('xregexp').XRegExp;
         var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
                 options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
-        options.countingType = !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
+
+        options.countingType =
+            !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
+
         if (options.round) {
-            // These tags are intended to be sufficient to provide ghost markdown construct level context.
-            // http://support.ghost.org/markdown-guide/
-            options.contextualTags = ["p", "ul", "ol", "pre", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6"];
+            options.contextualTags = defaultContextualTags;
         }
-        options.keepContext = !!options.contextualTags;
-        options.contextualTags = options.keepContext &&
-            Array.isArray(options.contextualTags) ?
+
+        options.keepContext     = !!options.contextualTags;
+        options.contextualTags  = 
+            options.keepContext && Array.isArray(options.contextualTags) ?
                 options.contextualTags : [];
-        options.limit = (options.countingType === COUNT_WORDS) ? Number(options.words) :
-            Number(options.characters);
+
+        options.limit =
+            (options.countingType === COUNT_WORDS) ?
+                Number(options.words) : Number(options.characters);
+
         options.limit = isNaN(options.limit) ? Infinity : options.limit;
 
         function isAtLimit() {
