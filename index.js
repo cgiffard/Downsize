@@ -244,7 +244,7 @@ var XRegexp = require('xregexp').XRegExp;
         // TODO: what should the whitespace behavior be?
         truncatedText = truncatedText.trim();
 
-        if (options.append && (stack.length || tagBuffer.length)) {
+        if (options.append && isAtLimit()) {
             truncatedText += options.append;
         }
 
