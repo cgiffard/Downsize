@@ -1,4 +1,4 @@
-# Downsize
+# Downsize [![Build Status](https://travis-ci.org/cgiffard/Downsize.svg?branch=master)](https://travis-ci.org/cgiffard/Downsize)
 
 Tag-safe HTML and XML text-truncation!
 
@@ -64,7 +64,7 @@ npm test
 
 ## Maintainers
 
-* [Christopher Giffard]([http://github.com/cgiffard)
-* [Adam Zethraeus]([http://github.com/zethraeus)
+* [Christopher Giffard](http://github.com/cgiffard)
+* [Adam Zethraeus](http://github.com/zethraeus)
 
 [Thanks also to all the contributors!](https://github.com/cgiffard/Downsize/graphs/contributors)
