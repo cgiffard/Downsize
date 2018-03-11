@@ -30,7 +30,7 @@
 
         var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
-                options.wordChars : new RegExp(/[\w0-9-']/,  "i");
+                options.wordChars : new RegExp(/[\w0-9]/i);
 
         options.countingType =
             !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
@@ -40,7 +40,7 @@
         }
 
         options.keepContext     = !!options.contextualTags;
-        options.contextualTags  = 
+        options.contextualTags  =
             options.keepContext && Array.isArray(options.contextualTags) ?
                 options.contextualTags : [];
 
