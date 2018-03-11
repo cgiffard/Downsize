@@ -28,9 +28,17 @@
         var COUNT_CHARACTERS = -1,
             COUNT_WORDS = -2;
 
+        var newRegExp;
+
+        try {
+          newRegExp = new RegExp(/[\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}]/iu);
+        } catch (e) {
+          newRegExp = new RegExp(/[\w0-9]/i);
+        }
+
         var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
-                options.wordChars : new RegExp(/[\w0-9]/i);
+                options.wordChars : newRegExp;
 
         options.countingType =
             !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
