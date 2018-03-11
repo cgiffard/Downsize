@@ -78,15 +78,25 @@ describe("Word-wise truncation", function () {
             .should.equal("<p>tag closing test</p><p>There should only</p><p>be</p>");
     });
 
-    it("should properly handle unicode languages", function () {
-        downsize("Рэпудёандаэ конжыквуюнтюр эю прё, нэ квуй янжольэнж квюальизквюэ чадипжкёнг. Ед кюм жкрипта", {words: 3})
-            .should.equal("Рэпудёандаэ конжыквуюнтюр эю");
-    });
+    describe('unicode', function() {
+      before(function() {
+        try {
+          newRegExp = new RegExp(/[\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}]/iu);
+        } catch (e) {
+          this.skip();
+        }
+      })
 
-    it("should properly handle unicode languages across nested tags", function () {
-        downsize("<p>Рэпудёандаэ конжыквуюнтюр эю прё, <span>нэ квуй янжольэнж квюальизквюэ</span> чадипжкёнг. Ед кюм жкрипта</p>", {words: 3})
-            .should.equal("<p>Рэпудёандаэ конжыквуюнтюр эю</p>");
-    });
+      it("should properly handle unicode languages", function () {
+          downsize("Рэпудёандаэ конжыквуюнтюр эю прё, нэ квуй янжольэнж квюальизквюэ чадипжкёнг. Ед кюм жкрипта", {words: 3})
+              .should.equal("Рэпудёандаэ конжыквуюнтюр эю");
+      });
+
+      it("should properly handle unicode languages across nested tags", function () {
+          downsize("<p>Рэпудёандаэ конжыквуюнтюр эю прё, <span>нэ квуй янжольэнж квюальизквюэ</span> чадипжкёнг. Ед кюм жкрипта</p>", {words: 3})
+              .should.equal("<p>Рэпудёандаэ конжыквуюнтюр эю</p>");
+      });
+    })
 
     it("should not have trailing empty tags", function () {
         downsize("<p>there are five words here</p><i>what</i>", {words: 5})
