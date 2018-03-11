@@ -1,6 +1,3 @@
-(function (exportTo) {
-    "use strict";
-
     // Nodes which should be considered implicitly self-closing
     // Taken from http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#void-elements
     var voidElements = [
@@ -16,7 +13,7 @@
         "h1", "h2", "h3", "h4", "h5", "h6"
     ];
 
-    var downsize = function (text, inputOptions, offset) {
+    module.exports = function (text, inputOptions, offset) {
         var stack = [],
             pointer = 0,
             tagName = "",
@@ -300,12 +297,3 @@
         var tagName = (tag || "").match(/<\/*([a-z0-9\:\-\_]+)/i);
         return tagName ? tagName[1] : null;
     }
-
-    // Export to node
-    if (typeof module !== 'undefined' && module.exports) {
-        return module.exports = downsize;
-    }
-
-    // Nope, export to the browser instead.
-    exportTo.downsize = downsize;
-}(this));
