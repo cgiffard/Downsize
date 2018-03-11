@@ -25,13 +25,13 @@
         var COUNT_CHARACTERS = -1,
             COUNT_WORDS = -2;
 
-        var newRegExp;
+        var newRegExp = new RegExp(/[\w0-9]/i);
 
-        try {
-          newRegExp = new RegExp(/[\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}]/iu);
-        } catch (e) {
-          newRegExp = new RegExp(/[\w0-9]/i);
-        }
+        // try {
+        //   newRegExp = new RegExp(/[\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}]/iu);
+        // } catch (e) {
+        //   newRegExp = new RegExp(/[\w0-9]/i);
+        // }
 
         var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
