@@ -1,6 +1,6 @@
 {
   "name": "downsize-cjs",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "Tag-safe truncation for HTML and XML. Works by word!",
   "main": "index.js",
   "scripts": {
