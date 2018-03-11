@@ -1,5 +1,3 @@
-var XRegexp = require('xregexp').XRegExp;
-
 (function (exportTo) {
     "use strict";
 
@@ -30,9 +28,17 @@ var XRegexp = require('xregexp').XRegExp;
         var COUNT_CHARACTERS = -1,
             COUNT_WORDS = -2;
 
+        var newRegExp;
+
+        try {
+          newRegExp = new RegExp(/[\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}]/iu);
+        } catch (e) {
+          newRegExp = new RegExp(/[\w0-9]/i);
+        }
+
         var options = inputOptions && typeof inputOptions === "object" ? inputOptions : {},
             wordChars = options.wordChars instanceof RegExp ?
-                options.wordChars : new XRegexp("[\\p{L}0-9\\-\\']", "i");
+                options.wordChars : newRegExp;
 
         options.countingType =
             !isNaN(Number(options.words)) ? COUNT_WORDS : COUNT_CHARACTERS;
@@ -42,7 +48,7 @@ var XRegexp = require('xregexp').XRegExp;
         }
 
         options.keepContext     = !!options.contextualTags;
-        options.contextualTags  = 
+        options.contextualTags  =
             options.keepContext && Array.isArray(options.contextualTags) ?
                 options.contextualTags : [];
 
