@@ -83,6 +83,8 @@ describe("Word-wise truncation", function () {
         try {
           newRegExp = new RegExp(/[\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}]/iu);
         } catch (e) {
+          // If current environment does not support RegExp Unicode Property Escapes then skip
+          // ref: http://node.green/#ES2018-features--RegExp-Unicode-Property-Escapes
           this.skip();
         }
       })
