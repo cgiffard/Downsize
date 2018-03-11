@@ -1,5 +1,5 @@
 {
-  "name": "downsize",
+  "name": "downsize-cjs",
   "version": "0.0.8",
   "description": "Tag-safe truncation for HTML and XML. Works by word!",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/cgiffard/Downsize"
+    "url": "git://github.com/stonecircle/Downsize"
   },
   "keywords": [
     "text",
@@ -30,6 +30,6 @@
   },
   "readmeFilename": "README.md",
   "bugs": {
-    "url": "https://github.com/cgiffard/Downsize/issues"
+    "url": "https://github.com/stonecircle/Downsize/issues"
   }
 }
