@@ -127,6 +127,7 @@ var XRegexp = require('xregexp').XRegExp;
                     // character is a word character, explamation mark or slash)
 
                     if (parseState === PARSER_UNINITIALISED &&
+                        pointer + 1 < text.length &&
                         text[pointer + 1].match(/[a-z0-9\-\_\/\!]/)) {
                         if (isAtLimit()) {
                             exit = true;
