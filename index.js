@@ -25,7 +25,7 @@
         var COUNT_CHARACTERS = -1,
             COUNT_WORDS = -2;
 
-        var newRegExp = new RegExp(/[\w0-9]/i);
+        var newRegExp = new RegExp(/[\p{L}0-9]/u);
 
         // try {
         //   newRegExp = new RegExp(/[\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}]/iu);
