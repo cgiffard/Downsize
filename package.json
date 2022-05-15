@@ -2,14 +2,6 @@
   "name": "downsize-cjs",
   "version": "0.1.1",
   "description": "Tag-safe truncation for HTML and XML. Works by word!",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha -R spec test.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/mansona/Downsize"
-  },
   "keywords": [
     "text",
     "truncate",
@@ -22,17 +14,25 @@
     "tag",
     "safe"
   ],
+  "homepage": "https://github.com/mansona/Downsize#readme",
+  "bugs": {
+    "url": "https://github.com/mansona/Downsize/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mansona/Downsize.git"
+  },
   "license": "BSD",
   "contributors": [
     "Christopher Giffard",
     "Chris Manson <chris@manson.ie>"
   ],
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -R spec test.js"
+  },
   "devDependencies": {
     "chai": "~1.5.0",
     "mocha": "^5.0.4"
-  },
-  "readmeFilename": "README.md",
-  "bugs": {
-    "url": "https://github.com/mansona/Downsize/issues"
   }
 }
