@@ -28,6 +28,7 @@
     "Chris Manson <chris@manson.ie>"
   ],
   "main": "index.js",
+  "module": "main.js",
   "scripts": {
     "test": "mocha -R spec test.js"
   },
