@@ -30,6 +30,7 @@
   "main": "index.js",
   "module": "main.js",
   "scripts": {
+    "changelog": "auto-changelog --template changelog.template --unreleased-only --prepend --load-github-issue-data --github-cache-dir .changelog",
     "test": "npm-run-all test:*",
     "test:cjs": "mocha -R spec test.js",
     "test:mjs": "mocha -R spec test.mjs"
@@ -38,6 +39,7 @@
     "esm": "^3.2.25"
   },
   "devDependencies": {
+    "auto-changelog": "github:mansona/auto-changelog#epic",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
     "npm-run-all": "^4.1.5"
