@@ -22,8 +22,11 @@
     "tag",
     "safe"
   ],
-  "author": "Christopher Giffard",
   "license": "BSD",
+  "contributors": [
+    "Christopher Giffard",
+    "Chris Manson <chris@manson.ie>"
+  ],
   "devDependencies": {
     "chai": "~1.5.0",
     "mocha": "^5.0.4"
