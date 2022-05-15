@@ -2,14 +2,6 @@
   "name": "downsize-cjs",
   "version": "0.1.1",
   "description": "Tag-safe truncation for HTML and XML. Works by word!",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha -R spec test.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/stonecircle/Downsize"
-  },
   "keywords": [
     "text",
     "truncate",
@@ -22,14 +14,32 @@
     "tag",
     "safe"
   ],
-  "author": "Christopher Giffard",
-  "license": "BSD",
-  "devDependencies": {
-    "chai": "~1.5.0",
-    "mocha": "^5.0.4"
-  },
-  "readmeFilename": "README.md",
+  "homepage": "https://github.com/mansona/Downsize#readme",
   "bugs": {
-    "url": "https://github.com/stonecircle/Downsize/issues"
+    "url": "https://github.com/mansona/Downsize/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mansona/Downsize.git"
+  },
+  "license": "BSD",
+  "contributors": [
+    "Christopher Giffard",
+    "Chris Manson <chris@manson.ie>"
+  ],
+  "main": "index.js",
+  "module": "main.js",
+  "scripts": {
+    "test": "npm-run-all test:*",
+    "test:cjs": "mocha -R spec test.js",
+    "test:mjs": "mocha -R spec test.mjs"
+  },
+  "dependencies": {
+    "esm": "^3.2.25"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
+    "npm-run-all": "^4.1.5"
   }
 }
