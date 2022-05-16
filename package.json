@@ -28,7 +28,7 @@
     "Chris Manson <chris@manson.ie>"
   ],
   "main": "index.js",
-  "module": "main.js",
+  "module": "main.mjs",
   "scripts": {
     "changelog": "auto-changelog --template changelog.template --unreleased-only --prepend --load-github-issue-data --github-cache-dir .changelog",
     "test": "npm-run-all test:*",
