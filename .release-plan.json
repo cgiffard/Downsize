@@ -1,0 +1,21 @@
+{
+  "solution": {
+    "downsize-cjs": {
+      "impact": "patch",
+      "oldVersion": "1.1.1",
+      "newVersion": "1.1.2",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :house: Internal"
+        }
+      ],
+      "pkgJSONPath": "./package.json"
+    }
+  },
+  "description": "## Release (2025-02-18)\n\ndownsize-cjs 1.1.2 (patch)\n\n#### :bug: Bug Fix\n* `downsize-cjs`\n  * [#12](https://github.com/mansona/Downsize/pull/12) make sure that dist folder makes it into the tar ([@mansona](https://github.com/mansona))\n\n#### :house: Internal\n* `downsize-cjs`\n  * [#14](https://github.com/mansona/Downsize/pull/14) update release plan ([@mansona](https://github.com/mansona))\n\n#### Committers: 1\n- Chris Manson ([@mansona](https://github.com/mansona))\n"
+}
